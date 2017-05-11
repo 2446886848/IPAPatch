@@ -104,21 +104,31 @@ for file in `ls -1 "${FRAMEWORKS_TO_INJECT_PATH}"`; do
     extension="${file##*.}"
     echo "$file 's extension is $extension"
 
-    if [ "$extension" != "framework" ]
+    if [ "$extension" == "framework" ]
     then
-        continue
+        filename="${file%.*}"
+
+        cp "$FRAMEWORKS_TO_INJECT_PATH/$file/$filename" "$TARGET_APP_PATH/Dylibs/$filename"
+
+        echo -n '     '
+        echo "Install Load: $file -> @executable_path/Dylibs/$filename"
+
+        echo "TARGET: $TARGET_APP_PATH"
+
+        "$OPTOOL" install -c load -p "@executable_path/Dylibs/$filename" -t "$TARGET_APP_PATH/$APP_BINARY"
+    elif [ "$extension" == "dylib" ]
+    then
+        filename="${file%.*}"
+
+        cp "$FRAMEWORKS_TO_INJECT_PATH/$file" "$TARGET_APP_PATH/Dylibs/$file"
+
+        echo -n '     '
+        echo "Install Load: $file -> @executable_path/Dylibs/$file"
+
+        echo "TARGET: $TARGET_APP_PATH"
+
+        "$OPTOOL" install -c load -p "@executable_path/Dylibs/$file" -t "$TARGET_APP_PATH/$APP_BINARY"
     fi
-
-    filename="${file%.*}"
-
-    cp "$FRAMEWORKS_TO_INJECT_PATH/$file/$filename" "$TARGET_APP_PATH/Dylibs/$filename"
-
-    echo -n '     '
-    echo "Install Load: $file -> @executable_path/Dylibs/$filename"
-
-    echo "TARGET: $TARGET_APP_PATH"
-
-    "$OPTOOL" install -c load -p "@executable_path/Dylibs/$filename" -t "$TARGET_APP_PATH/$APP_BINARY"
 done
 
 
